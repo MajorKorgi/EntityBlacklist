@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 
 author 'Korgron'
-description 'SquadBattle'
+description 'EntityBlacklist'
 
 version '0.1.0'
 

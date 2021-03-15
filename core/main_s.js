@@ -33,7 +33,6 @@ async function DoesPlayerSitInBlacklistVehicle(id, ped) {
         const blvehicle = GetHashKey(cf[key])
        
         if (plmodel == blvehicle) {
-            console.log(plvehicle + " || "+ blvehicle)
             const Nid = NetworkGetNetworkIdFromEntity(plvehicle)
             emitNet("LeaveVehicle", id, Nid)
         }
