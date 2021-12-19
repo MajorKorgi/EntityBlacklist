@@ -55,8 +55,3 @@ setTick(async () => {
         DoesPlayerHasBlacklistWeapon(id)
     }
 })
-
-
-RegisterCommand("getPlayers", () => {
-    console.log(getPlayers())
-}, false)
