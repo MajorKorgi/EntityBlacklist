@@ -1,28 +1,33 @@
-Wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-var cf = require("./config/config.json")
+var vcf = require("./config/vehconfig.json")
+var pcf = require("./config/pedconfig.json")
+var wcf = require("./config/weaponconfig.json")
 
-var currActivePlayers = []
+async function DoesPlayerHasBlacklistWeapon(id) {
+    for (const i in wcf) {
+        const weapon = wcf[i]
+        const hash = GetHashKey(weapon)
+        const ped = GetPlayerPed(id)
 
-var offlinePlayers = []
-
-onNet("PushPlayer", async (source) => {
-    PushPlayer(source)
-})
-
-on("playerDropped", (reason) => {
-    offlinePlayers.push({id: source})
-});
-
-function PushPlayer(source) {
-    currActivePlayers.push({id: source, name: GetPlayerName(source)})
+        RemoveWeaponFromPed(ped, hash)
+    }
 }
 
-function GetPlayers() {
-    return currActivePlayers
+async function DoesPlayerHasBlacklistPed(id) {
+    const ped = GetPlayerPed(id)
+    for (const key in pcf) {
+        
+        const plped = GetEntityModel(ped)
+        const hash = GetHashKey(pcf[key])
+
+        if (plped == hash) {
+            emitNet("ChangePed", id)
+        }
+    }
 }
 
-async function DoesPlayerSitInBlacklistVehicle(id, ped) {
-    for (const key in cf) {
+async function DoesPlayerSitInBlacklistVehicle(id) {
+    const ped = GetPlayerPed(id)
+    for (const key in vcf) {
         const plvehicle = GetVehiclePedIsIn(ped, false)
         let plmodel = 0
 
@@ -30,8 +35,8 @@ async function DoesPlayerSitInBlacklistVehicle(id, ped) {
             plmodel = GetEntityModel(plvehicle)
         }
 
-        const blvehicle = GetHashKey(cf[key])
-       
+        const blvehicle = GetHashKey(vcf[key])
+
         if (plmodel == blvehicle) {
             const Nid = NetworkGetNetworkIdFromEntity(plvehicle)
             emitNet("LeaveVehicle", id, Nid)
@@ -40,19 +45,18 @@ async function DoesPlayerSitInBlacklistVehicle(id, ped) {
 }
 
 setTick(async () => {
-    await Wait(500)
-    let players = GetPlayers()
+    let players = getPlayers()
     for (const key in players) {
         await Wait(500)
-        const id = players[key]["id"]
-        const ped = GetPlayerPed(id)
-        DoesPlayerSitInBlacklistVehicle(id, ped)
+        const id = players[key]
 
-        for (const key2 in offlinePlayers) {
-            if (players[key][id] == offlinePlayers[key2][id]) {
-                currActivePlayers.splice(key, 1)
-                offlinePlayers.splice(key2, 1)
-            }
-        }
+        DoesPlayerSitInBlacklistVehicle(id)
+        DoesPlayerHasBlacklistPed(id)
+        DoesPlayerHasBlacklistWeapon(id)
     }
 })
+
+
+RegisterCommand("getPlayers", () => {
+    console.log(getPlayers())
+}, false)

@@ -9,3 +9,15 @@ onNet("LeaveVehicle", async (Nid) => {
     TaskLeaveVehicle(ped, vehicle, 0)
     SetVehicleDoorsLockedForAllPlayers(vehicle, true)
 })
+
+onNet("ChangePed", async (wcf) => {
+    let ped = GetPlayerPed(-1)
+    let model = "a_m_y_skater_01"
+    RequestModel(GetHashKey(model))
+    
+    while (!HasModelLoaded(GetHashKey(model))) {
+        await Wait(1)
+    }
+
+    SetPlayerModel(PlayerId(), model)
+})
